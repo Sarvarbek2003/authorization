@@ -26,10 +26,17 @@ export class AuthController {
     }
 
     @Post('passwd')
-    @ApiOkResponse({description: "User login"})
+    @ApiOkResponse({description: "User password"})
     @ApiBody({ type: PassDto })
     async passwd(@Body() dto: PassDto, @Res() res: Response ){
         return await this.authService.passwd(dto, res)
+    }
+
+    @Post('resend')
+    @ApiOkResponse({description: "Resend sms code"})
+    @ApiBody({ type: AuthDto })
+    async resend(@Body() dto: AuthDto, @Res() res: Response ){
+        return await this.authService.login(dto, res)
     }
     
 }

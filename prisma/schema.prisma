@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  uuid      String        @id @default(uuid())
+  phone     String        @unique
+  password  String?      
+  creted_At DateTime      @default(now())
+  @@map("users")
+}
+
+model CheckSms {
+  verify    String   @unique
+  code      String   
+  phone     String
+  count     Int      @default(3)
+  creted_At DateTime @default(now())
+  devace_id String?
+  @@map("checksms")
+}

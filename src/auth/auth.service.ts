@@ -29,8 +29,8 @@ export class AuthService {
 
                 if(!kluch) return res.status(302).json({"status": 302, "message": "Если вы уже получили смс-код, а смс не приходит в течение 5 минут, попробуйте еще раз" })
 
-                let smsCode = Math.random() * 1000000 | 0
-                let verify =  Math.random() * 1000000 | 0
+                let smsCode = 100000 + Math.random() * 900000 | 0
+                let verify =  100000 + Math.random() * 900000 | 0
 
                 writeFileSync('code.txt', `${smsCode}`)
 
@@ -124,8 +124,8 @@ export class AuthService {
                 let kluch = await this.sendSmsTime(user.phone)
                 if(!kluch) return res.status(302).json({"status": 302, "message": "Если вы уже получили смс-код, а смс не приходит в течение 5 минут, попробуйте еще раз" })
 
-                let smsCode = Math.random() * 1000000 | 0
-                let verify =  Math.random() * 1000000 | 0
+                let smsCode = 100000 + Math.random() * 900000 | 0
+                let verify =  100000 + Math.random() * 900000 | 0
 
                 writeFileSync('code.txt', `${smsCode}`)
 

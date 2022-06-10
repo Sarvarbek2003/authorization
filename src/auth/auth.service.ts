@@ -7,7 +7,8 @@ import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from "@nestjs/config";
 import { writeFileSync } from 'fs';
 import { Response } from "express";
-
+import * as crypto from 'crypto';
+import { ApiOkResponse } from "@nestjs/swagger";
 
 @Injectable({})
 export class AuthService {
@@ -24,10 +25,11 @@ export class AuthService {
                     phone :dto.phone
                 }
             });
+            
             if(!user) {
                 let kluch = await this.sendSmsTime(dto)
 
-                if(!kluch) return res.status(302).json({"status": 302, "message": "Если вы уже получили смс-код, а смс не приходит в течение 5 минут, попробуйте еще раз" })
+                if(!kluch) return res.status(403).json({"status": 403, "message": "Если вы уже получили смс-код, а смс не приходит в течение 5 минут, попробуйте еще раз" })
 
                 let smsCode = 100000 + Math.random() * 900000 | 0
                 let verify =  100000 + Math.random() * 900000 | 0
@@ -41,11 +43,16 @@ export class AuthService {
                         phone: dto.phone
                     }
                 })
-                
-                return  res.status(201).json({
+
+                let response = {
                     "phone": "+998 " + dto.phone.slice(8).padStart(9, "*"),
                     "verify": `${verify}`
-                })
+                }
+
+                let sign = this.rsaSign(response)
+                res.setHeader('sign', sign)
+
+                return  res.status(201).json(response)
             } else if(user.phone) {
                 delete user.creted_At
                 delete user.password
@@ -62,7 +69,7 @@ export class AuthService {
             let check = await this.prisma.checkSms.findMany({where: {verify: dto.verify}})
 
             if( !check.length ) {
-                return res.status(400).json({ "status": 400, "error": 'Код подтверждения неверный' })
+                return res.status(403).json({ "status": 403, "error": 'Код подтверждения неверный' })
             }
 
             let user = await this.prisma.user.findFirst({ where:{ phone: check[0].phone } })
@@ -96,7 +103,7 @@ export class AuthService {
                         count: count
                     }
                 })
-                return res.status(400).json({"status": 400, "error": "Код подтверждения неверный"})          
+                return res.status(403).json({"status": 403, "error": "Код подтверждения неверный"})          
             } else {
                 await this.prisma.checkSms.deleteMany({
                     where: {
@@ -115,7 +122,7 @@ export class AuthService {
             let user = await this.prisma.user.findFirst({ where: { uuid: dto.uuid } })
             let check = await this.prisma.checkSms.findFirst({ where: { phone: user.phone }})
             if(!user) {
-                return res.status(400).json({ "status": 400, "error": 'Пользователь не найден' })
+                return res.status(403).json({ "status": 403, "error": 'Пользователь не найден' })
             } else if(user.password) {
 
                 const password = await argon.verify(user.password, dto.password);
@@ -137,10 +144,15 @@ export class AuthService {
                     }
                 })
 
-                return  res.status(201).json({
+                let response = {
                     "phone": "+998 " + user.phone.slice(8).padStart(9, "*"),
                     "verify": `${verify}`
-                })
+                }
+
+                let sign = this.rsaSign(response)
+                res.setHeader('sign', sign)
+
+                return  res.status(201).json(response)
             } else if(user.password == null) {
 
                 const hash = await argon.hash(dto.password)
@@ -175,6 +187,15 @@ export class AuthService {
         }
     }
 
+    rsaSign (data):string{
+        let privateKey = this.config.get('PRIVATE_KEY')
+        const signature = crypto.sign("sha256", Buffer.from(JSON.stringify(data)), {
+            key: privateKey
+        });
+
+        return signature.toString('base64')
+    }
+
     async signToken (uuid: string, phone: string): Promise<{ access_token: string }> {
 
         const payload = {
@@ -194,4 +215,6 @@ export class AuthService {
             access_token: token,
         }
     }
+
+
 }

@@ -10,4 +10,5 @@ export class VerifyDto {
     @Length(0,6)
     @ApiProperty({type: String, description: 'Sms code'})
     smsCode: string
+
 }

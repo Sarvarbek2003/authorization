@@ -6,4 +6,9 @@ export class AuthDto {
     @Length(12,12)
     @ApiProperty({type: String, description: 'Phone number'})
     phone: string
+
+    @IsString()
+    @ApiProperty({type: String, description: 'Public key'})
+    cientPublic: string
+
 }

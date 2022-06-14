@@ -45,7 +45,7 @@ export class AuthController {
     @ApiBody({ type: VerifyDto })
     @UseInterceptors(FileInterceptor('file'))
     async checkSms(@UploadedFile() file:any, @Body() dto: VerifyDto, @Res() res: Response, @Req() req:Request  ){
-        
+
         // проверяет, что отправленные данные соответствуют зашифрованным данным
         let check = await this.rsaVerify(dto, req.headers?.sign)
         if (!check) return res.status(403).json({'status': 403, 'error':'Зашифрованные данные несовместимы'})
@@ -60,7 +60,7 @@ export class AuthController {
     @ApiBody({ type: PassDto })
     @UseInterceptors(FileInterceptor('file'))
     async passwd(@UploadedFile() file:any, @Body() dto: PassDto, @Res() res: Response, @Req() req:Request ){
-        
+
         // проверяет, что отправленные данные соответствуют зашифрованным данным
         let check = await this.rsaVerify(dto, req.headers?.sign)
         if (!check) return res.status(403).json({'status': 403, 'error':'Зашифрованные данные несовместимы'})
@@ -75,7 +75,7 @@ export class AuthController {
     @ApiBody({ type: AuthDto })
     @UseInterceptors(FileInterceptor('file'))
     async resend(@UploadedFile() file:any, @Body() dto: AuthDto, @Res() res: Response, @Req() req:Request ){
-        
+
         // проверяет, что отправленные данные соответствуют зашифрованным данным
         let check = await this.rsaVerify(dto, req.headers?.sign)
         if (!check) return res.status(403).json({'status': 403, 'error':'Зашифрованные данные несовместимы'})
@@ -87,7 +87,7 @@ export class AuthController {
         if ( dto.cientPublic ) { // если клиент отправил publicKey
 
             let publicKey = '-----BEGIN PUBLIC KEY-----\n'+dto.cientPublic+'\n-----END PUBLIC KEY-----'
-
+            
             // сохраняет публичный ключ клиента в src/key/public.key
             writeFileSync('src/key/public.key', publicKey)
         } else {

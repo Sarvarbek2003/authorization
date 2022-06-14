@@ -101,7 +101,11 @@ export class AuthService {
             if(dto.smsCode == check[0].code && check[0].count >  0){
 
                 if(!user?.password){    // когда вы отправляете SMS новому пользователю
-
+                    await this.prisma.checkSms.deleteMany({ 
+                        where: {
+                            verify:dto.verify
+                        }
+                    })
                     let user = await this.prisma.user.create({ 
                         data:{
                             phone: check[0]?.phone
@@ -149,6 +153,7 @@ export class AuthService {
                 return res.status(401).json({ "status": 401, "error": 'Регистрация не удалась, попробуйте позже' })
             }
         } catch (error) {
+            console.log(error)
             return res.status(500).json({ "status": 500, "error": "Internal Server Error" })
         }
     }
